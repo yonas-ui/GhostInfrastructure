@@ -1,0 +1,81 @@
+name: ghost-infrastructure
+
+x-backend: &backend
+  build: ./backend
+  environment: &backend-env
+    DATABASE_URL: postgresql+psycopg2://ghost:ghost@db:5432/ghost
+    REDIS_URL: redis://redis:6379/0
+    SECRET_KEY: ${SECRET_KEY:-change-me-to-a-long-random-string-before-production}
+    CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    HEALTH_INTERVAL_SECONDS: ${HEALTH_INTERVAL_SECONDS:-30}
+    SEED_DEMO: ${SEED_DEMO:-true}
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ghost
+      POSTGRES_PASSWORD: ghost
+      POSTGRES_DB: ghost
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghost -d ghost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    <<: *backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+
+  # Celery worker: runs health probes + ghost scans
+  worker:
+    <<: *backend
+    command: celery -A app.celery_app.celery worker --loglevel=INFO
+    environment:
+      <<: *backend-env
+      SEED_DEMO: "false"
+
+  # Celery beat: the scheduler that triggers the periodic tasks
+  beat:
+    <<: *backend
+    command: celery -A app.celery_app.celery beat --loglevel=INFO
+    environment:
+      <<: *backend-env
+      SEED_DEMO: "false"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

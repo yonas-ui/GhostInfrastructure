@@ -1,0 +1,23 @@
+groups:
+  - name: ghost-infrastructure
+    rules:
+      - alert: ServiceDown
+        expr: ghost_service_up == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.service }} is down ({{ $labels.project }})"
+
+      - alert: CriticalServiceDegraded
+        expr: ghost_service_up == 0.5 and on(project, service) ghost_service_criticality >= 4
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Business-critical {{ $labels.service }} is degraded"
+
+      - alert: UndocumentedDependenciesPresent
+        expr: ghost_dependencies{documented="false"} > 0
+        for: 1h
+        labels: { severity: info }
+        annotations:
+          summary: "{{ $value }} undocumented dependencies in {{ $labels.project }}"

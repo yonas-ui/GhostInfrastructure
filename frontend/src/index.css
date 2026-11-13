@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body { @apply bg-ink-950 text-slate-200 font-sans antialiased; }
+
+/* React Flow chrome restyled for the dark theme */
+.react-flow { background: #07090f; }
+.react-flow__controls-button { background: #111827; border-bottom: 1px solid #273149; fill: #cbd5e1; }
+.react-flow__controls-button:hover { background: #1b2335; }
+.react-flow__minimap { background: #0b0f19 !important; border: 1px solid #273149; border-radius: 8px; }
+.react-flow__attribution { display: none; }
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-1.5 rounded-md border border-ink-600 bg-ink-700 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-ink-600 disabled:opacity-40 disabled:cursor-not-allowed; }
+  .btn-primary { @apply border-sky-500/60 bg-sky-500/20 text-sky-200 hover:bg-sky-500/30; }
+  .btn-danger { @apply border-red-500/50 bg-red-500/15 text-red-300 hover:bg-red-500/25; }
+  .input { @apply w-full rounded-md border border-ink-600 bg-ink-900 px-2.5 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none; }
+  .label { @apply mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-400; }
+  .card { @apply rounded-lg border border-ink-600 bg-ink-800/70 p-3; }
+  .chip { @apply inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide; }
+}

@@ -1,0 +1,15 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9
+pydantic>=2.6
+email-validator>=2.1
+python-multipart>=0.0.9
+pyjwt>=2.8
+networkx>=3.2
+celery>=5.3
+redis>=5.0
+httpx>=0.26
+prometheus-client>=0.19
+pyyaml>=6.0
+pytest>=8.0
